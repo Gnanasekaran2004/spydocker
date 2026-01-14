@@ -13,3 +13,6 @@ jobs:
 
       - name: Check OS
         run: cat /etc/os-release
+
+      - name: version python
+        run: python3 --version
