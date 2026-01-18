@@ -4,18 +4,31 @@ on: [push, pull_request]
 
 jobs:
   test-code:
-    runs-on: Ubuntu-latest
-    -steps:
-      -name: Checkout Code
-       uses: actions/checkout@v3
+    runs-on: ubuntu-latest
 
-      - name: Set up Python
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: setup python
         uses: actions/setup-python@v4
         with:
-         python-version: '3.9'
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python-version: '3.9'
       - name: Run Tests
-        run: python test_logic.py
+        runs: python3 test_logic.py
+  build-push:
+    needs: test-code
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/github-spy:latest
